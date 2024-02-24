@@ -49,7 +49,6 @@
 <script setup>
 definePageMeta({
   layout: 'auth',
-  // middleware : 'auth'
 })
 
 const URL = "https://alaatv.com/api/v2/"
@@ -79,13 +78,6 @@ const handleCookie = async (name, data) => {
 
 const subFormLogin = async () => {
   resForm.pending = true
-  // const { data: resData, error, status } = await useLazyFetch(`${URL}login`, {
-  //   method: "post",
-  //   body: {
-  //     "mobile": form.mobile,
-  //     "password": form.password
-  //   }
-  // })
   const { data: resData, error, status } = await useIFetch(`${URL}login` , false , "POST" ,form )
   resForm.pending = false
   if (status.value === "success") {

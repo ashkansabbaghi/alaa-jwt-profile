@@ -103,9 +103,6 @@ definePageMeta({
     middleware: 'auth',
 })
 
-// get user info from cookie
-const token = useCookie('token').value
-
 const URL = "https://alaatv.com/api/v2/"
 const form = reactive({
     first_name: "",
@@ -128,7 +125,6 @@ const { data: resUser, error: userError } = await useAsyncData(async () => await
 const { cities, genders, grades, majors, provinces } = resInfo?.value?.data
 
 // get users
-console.log(toRaw(resUser.value?.data?.data));
 if (resUser.value?.data?.data) {
     user.value = toRaw(resUser.value?.data?.data)
     form.first_name = user.value?.first_name
