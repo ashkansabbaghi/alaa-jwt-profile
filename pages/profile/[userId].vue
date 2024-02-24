@@ -84,7 +84,7 @@
                             class="border p-2 rounded w-full focus:border-b-slate-400">
                     </div>
                     <button type="submit" id="theme-toggle"
-                        class="w-full mx-auto px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 focus:outline-none transition-colors">
+                        class="w-full mx-auto px-4 py-2 rounded bg-cyan-500 hover:bg-cyan-600 text-white focus:outline-none transition-colors">
                         save
                     </button>
                     <button @click.prevent="logout">
