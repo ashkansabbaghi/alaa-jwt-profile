@@ -87,6 +87,10 @@
                         class="w-full mx-auto px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 focus:outline-none transition-colors">
                         save
                     </button>
+                    <button @click.prevent="logout">
+                        <Icon name="material-symbols:exit-to-app"
+                            class="text-2xl text-red-700 w-full mt-5 cursor-pointer" />
+                    </button>
                 </form>
             </div>
 
@@ -100,9 +104,7 @@ definePageMeta({
 })
 
 // get user info from cookie
-refreshCookie("user")
-const user = useCookie('user').value
-// console.log(user);
+const token = useCookie('token').value
 
 const URL = "https://alaatv.com/api/v2/"
 const form = reactive({
@@ -118,41 +120,60 @@ const form = reactive({
     province: "",
     pending: false
 })
-
+const { userId } = useRoute()?.params
+const user = ref(null)
 const { data: resInfo, error } = await useAsyncData(() => $fetch(`${URL}megaroute/getUserFormData`))
+const { data: resUser, error: userError } = await useAsyncData(async () => await useIFetch(`${URL}user/${userId}`, true, "GET"))
+
 const { cities, genders, grades, majors, provinces } = resInfo?.value?.data
-// handler Error resInfo
+
+// get users
+console.log(toRaw(resUser.value?.data?.data));
+if (resUser.value?.data?.data) {
+    user.value = toRaw(resUser.value?.data?.data)
+    form.first_name = user.value?.first_name
+    form.last_name = user.value?.last_name
+    form.gender_id = user.value?.gender_id
+    form.grade_id = user.value?.grade_id
+    form.major_id = user.value?.major_id
+    form.address = user.value?.address
+    form.shahr_id = user.value?.shahr_id
+    form.school = user.value?.school
+    // form.province = user?.province
+} else {
+    console.log(userError.value)
+}
+
 
 const filteredCities = computed(() => {
     return form.province?.id ? cities.filter(city => city.province.id === form.province?.id) : []
 })
 
+const setAddressFromProvince = () => { form.address = form.province?.title }
+
 const subForm = async () => {
+    setAddressFromProvince()
     form.pending = true
-    const { data: resData, error, status } = await useLazyFetch(`${URL}user/${user?.id}`, {
-        headers: {
-            "Content-Type": "application/json"
-        },
-        method: "PUT",
-        body: {
-            first_name: form.first_name,
-            last_name: form.last_name,
-            gender_id: form.gender_id,
-            grade_id: form.grade_id,
-            major_id: form.major_id,
-            address: form.address,
-            shahr_id: form.shahr_id,
-            school: form.school,
-        }
-    })
+    const { data: resData, error, status } = await useIFetch(`${URL}user/${user?.id}`, true, "PUT", JSON.stringify(form))
+
     form.pending = false
     if (status.value === "success") {
+        // todo set data in form
         console.log(resData.value);
     } else {
-        console.log(error.value);
-        // resForm.errors = Object.values(error.value.data.errors).flat()
+        console.log(error);
+        // todo expire token and redirect to login page
     }
 }
 
+const logout = async () => {
+    refreshCookie("user")
+    refreshCookie("token")
+    const userCookie = useCookie("user")
+    const token = useCookie("token")
+    token.value = null
+    userCookie.value = null
+    return navigateTo("/login")
+}
 
 </script>

@@ -17,8 +17,8 @@
                 <li v-for="(error, i) in resForm.errors" :key="i">{{ error }}</li>
               </ul>
               <div class="relative">
-                <input @input="(e) => form.mobile = e.target.value" tabindex="1" autocomplete="off" id="mobile"
-                  name="mobile" type="number"
+                <input @input="setInfo" tabindex="1" autocomplete="off" id="mobile" name="mobile"
+                  type="number"
                   class="peer placeholder-transparent h-10 w-full border-b-2 border-gray-300 text-gray-900 focus:outline-none focus:borer-rose-600"
                   placeholder="mobile" />
                 <label for="mobile"
@@ -26,7 +26,7 @@
                   Mobile</label>
               </div>
               <div class="relative">
-                <input @input="(e) => form.password = e.target.value" tabindex="2" autocomplete="off" id="password"
+                <input @input="setInfo" tabindex="2" autocomplete="off" id="password"
                   name="password" type="password"
                   class="peer placeholder-transparent h-10 w-full border-b-2 border-gray-300 text-gray-900 focus:outline-none focus:borer-rose-600"
                   placeholder="password" />
@@ -40,7 +40,6 @@
             </form>
           </div>
           <nuxt-link class="text-cyan-700" to="/">go to home </nuxt-link>
-          <span> {{ resData?.value?.data?.asses_token }}</span>
         </div>
       </div>
     </div>
@@ -64,7 +63,11 @@ const resForm = reactive({
   errors: []
 })
 
-const handleCookie = async (name,data) => {
+const setInfo = (e) => {
+  form[e.target.name] = e.target.value
+}
+
+const handleCookie = async (name, data) => {
   const stringData = JSON.stringify(data)
   await $fetch(`/api/${name}`, {
     method: "post",
@@ -74,27 +77,25 @@ const handleCookie = async (name,data) => {
   })
 }
 
-
-
 const subFormLogin = async () => {
   resForm.pending = true
-  const { data: resData, error, status } = await useLazyFetch(`${URL}login`, {
-    method: "post",
-    body: {
-      "mobile": form.mobile,
-      "password": form.password
-    }
-  })
+  // const { data: resData, error, status } = await useLazyFetch(`${URL}login`, {
+  //   method: "post",
+  //   body: {
+  //     "mobile": form.mobile,
+  //     "password": form.password
+  //   }
+  // })
+  const { data: resData, error, status } = await useIFetch(`${URL}login` , false , "POST" ,form )
   resForm.pending = false
   if (status.value === "success") {
-    
     const data = toRaw(resData.value)?.data
     const token = data?.access_token
     const user = data?.user
 
-    await handleCookie("token",token)
-    await handleCookie("user",user)
-    await navigateTo(`/profile/${user?.mobile}`)
+    await handleCookie("token", token)
+    await handleCookie("user", user)
+    await navigateTo(`/profile/${user?.id}`)
   } else {
     resForm.errors = Object.values(error.value.data.errors).flat()
   }
